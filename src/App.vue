@@ -3,11 +3,13 @@ import { ref, reactive } from 'vue'
 import Rembg from './utils/rembg?worker'
 // @ts-ignore-next-line
 
-const containerStyle = reactive({ clip: `rect(0px, 250px, 500px, 0px)`, })
+const range = ref(100)
 const isModelLoaded = ref(false)
 const loading = ref(false)
+const isError = ref(false)
 const sourceSrc = ref('')
 const targetSrc = ref('')
+const spendTime = ref(0)
 
 const rembg = new Rembg()
 
@@ -16,20 +18,37 @@ rembg.onmessage = (event: any) => {
     isModelLoaded.value = true
   } else if (event.data[0] === 'result') {
     targetSrc.value = event.data[1]
+    range.value = 50
+    loading.value = false
+    spendTime.value = (Date.now() - spendTime.value) / 1000
+  }
+}
+
+rembg.onerror = (event: any) => {
+  if (event.data === 'modelLoadError') {
+    isModelLoaded.value = true
+  } else if (event.data[0] === 'rembgError') {
+    targetSrc.value = ''
     loading.value = false
   }
+  isError.value = true
+  console.error(event)
 }
 
 rembg.postMessage('loadModel')
 
 const onSourceLoaded = async (event: any) => {
   loading.value = true
+  spendTime.value = Date.now()
+  range.value = 100
   rembg.postMessage(['rembg', event.target.src])
 }
+
 const onRangeChange = (event: any) => {
   const value = event.target.value;
-  containerStyle.clip = `rect(0px, ${5 * value}px, 500px, 0px)`;
+  range.value = value;
 }
+
 const onFileSelected = (event: any) => {
   targetSrc.value = ''
 
@@ -49,7 +68,7 @@ const onFileSelected = (event: any) => {
     <div v-show="loading" class="loading">处理中，请稍后···</div>
 
     <div class="image-container">
-      <div class="source-container" :style="containerStyle">
+      <div class="source-container" :style="{ clip: `rect(0px, ${range * 5}px, 500px, 0px)` }">
         <img class="source" :src="sourceSrc" alt="" @load="onSourceLoaded">
       </div>
       <div class="target-container">
@@ -57,9 +76,12 @@ const onFileSelected = (event: any) => {
       </div>
     </div>
 
-    <input type="range" min="0" max="100" step="1" value="50" @input="onRangeChange" />
+    <input type="range" min="0" max="100" step="1" :value="range" @input="onRangeChange" />
 
     <input type="file" name="" accept="image/*" @change="onFileSelected">
+
+    <div v-show="isError" class="error">出错了，请重试</div>
+    <div v-show="targetSrc" class="spend-time">已完成，耗时{{ spendTime.toFixed(2) }}s</div>
   </div>
 </template>
 
@@ -120,6 +142,10 @@ img {
   align-items: center;
   background-color: rgba(255, 255, 255, 0.8);
   font-size: 24px;
+}
+
+.error {
+  color: red;
 }
 
 input[type="range"] {

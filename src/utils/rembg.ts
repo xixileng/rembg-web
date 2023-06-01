@@ -3,37 +3,38 @@ import * as ImageJS from "image-js";
 import { InferenceSession, Tensor } from "onnxruntime-web";
 
 let model: InferenceSession = null
-const MODEL_DIR: string = '/silueta.onnx'
+const MODEL_DIR: string = '/rembg-web/silueta.onnx'
 
 onmessage = async function(event: MessageEvent) {
   if (event.data === 'loadModel') {
-    await loadModel()
-    postMessage('modelLoaded');
+    try {
+      await loadModel()
+      postMessage('modelLoaded');
+    } catch (error) {
+      postMessage('modelLoadError');
+    }
   } else if (event.data[0] === 'rembg') {
-    console.time('rembg')
-    const workerResult = await rembg(event.data[1])
-    console.timeEnd('rembg')
-    postMessage(['result', workerResult]);
+    try {
+      const workerResult = await rembg(event.data[1])
+      postMessage(['result', workerResult]);
+    } catch (error) {
+      postMessage('rembgError');
+    }
   }
 }
 
 export const loadModel = async () => {
-  try {
-    if (model) return model
+  if (model) return model
 
-    const URL: string = MODEL_DIR;
-    const session = await InferenceSession.create(URL, { executionProviders: ['wasm'] });
-  
-    model = session
-    return model
-  } catch (e) {
-    console.error(e);
-  }
+  const URL: string = MODEL_DIR;
+  const session = await InferenceSession.create(URL, { executionProviders: ['wasm'] });
+
+  model = session
+  return model
 }
 
 export const rembg = async (src: string) => {
   const model = await loadModel()
-
 
   // 0 to 255
   const inputImage = await ImageJS.Image.load(src)

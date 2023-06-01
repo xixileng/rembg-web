@@ -15,6 +15,7 @@ export default defineConfig({
       }
     ]
   }),],
+  base: '/rembg-web/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
