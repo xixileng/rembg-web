@@ -3,7 +3,7 @@ import * as ImageJS from "image-js";
 import { InferenceSession, Tensor } from "onnxruntime-web";
 
 let model: InferenceSession = null
-const MODEL_DIR: string = '/rembg-web/silueta.onnx'
+const MODEL_DIR: string = '/silueta.onnx'
 
 onmessage = async function(event: MessageEvent) {
   if (event.data === 'loadModel') {
