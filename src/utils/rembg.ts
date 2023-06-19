@@ -36,7 +36,6 @@ export const loadModel = async () => {
 export const rembg = async (src: string) => {
   const model = await loadModel()
 
-  // 0 to 255
   const inputImage = await ImageJS.Image.load(src)
 
   const { width, height } = inputImage
@@ -61,7 +60,6 @@ export const rembg = async (src: string) => {
   for (let i = 0; i < inputPixels.length; i++) {
     const channel = i % 3;
     const channelIndex = Math.floor(i / 3);
-    // TODO: look at this again
     inputChannels[channel][channelIndex] =
       (inputPixels[i] / max - mean[channel]) / std[channel];
   }

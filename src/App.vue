@@ -1,7 +1,31 @@
+<template>
+  <div class="wrapper">
+
+    <div v-show="!isModelLoaded" class="loading">模型加载中，请稍后···</div>
+    <div v-show="loading" class="loading">处理中，请稍后···</div>
+
+    <div class="image-container">
+      <div class="source-container" :style="{ clip: `rect(0px, ${range * 5}px, 500px, 0px)` }">
+        <img class="source" :src="sourceSrc" alt="" @load="onSourceLoaded">
+      </div>
+      <div class="target-container">
+        <img class="target" :src="targetSrc" alt="">
+      </div>
+    </div>
+
+    <input type="range" min="0" max="100" step="1" :value="range" @input="onRangeChange" />
+
+    <input type="file" name="" accept="image/*" @change="onFileSelected">
+
+    <div v-show="isError" class="error">出错了，请重试</div>
+    <div v-show="targetSrc" class="spend-time">已完成，耗时{{ spendTime.toFixed(2) }}s</div>
+  </div>
+</template>
+
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import Rembg from './utils/rembg?worker'
+import { ref } from 'vue'
 // @ts-ignore-next-line
+import Rembg from './utils/rembg?worker'
 
 const range = ref(100)
 const isModelLoaded = ref(false)
@@ -60,30 +84,6 @@ const onFileSelected = (event: any) => {
   reader.readAsDataURL(file);
 }
 </script>
-
-<template>
-  <div class="wrapper">
-
-    <div v-show="!isModelLoaded" class="loading">模型加载中，请稍后···</div>
-    <div v-show="loading" class="loading">处理中，请稍后···</div>
-
-    <div class="image-container">
-      <div class="source-container" :style="{ clip: `rect(0px, ${range * 5}px, 500px, 0px)` }">
-        <img class="source" :src="sourceSrc" alt="" @load="onSourceLoaded">
-      </div>
-      <div class="target-container">
-        <img class="target" :src="targetSrc" alt="">
-      </div>
-    </div>
-
-    <input type="range" min="0" max="100" step="1" :value="range" @input="onRangeChange" />
-
-    <input type="file" name="" accept="image/*" @change="onFileSelected">
-
-    <div v-show="isError" class="error">出错了，请重试</div>
-    <div v-show="targetSrc" class="spend-time">已完成，耗时{{ spendTime.toFixed(2) }}s</div>
-  </div>
-</template>
 
 <style scoped>
 .wrapper {
